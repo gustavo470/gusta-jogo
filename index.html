@@ -1,0 +1,148 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+  <meta name="description" content="Monkey Maze - Um arcade retrô clássico estilo Pac-Man com macaco, leões da selva e bananas!">
+  <title>Monkey Maze - Pac-Monkey Arcade</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns=%22http://www.w3.org/2000/svg%22 viewBox=%220 0 100 100%22><text y=%22.9em%22 font-size=%2290%22>🐵</text></svg>">
+  <link rel="stylesheet" href="style.css">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
+</head>
+<body>
+  <div class="arcade-cabinet">
+    <!-- Top HUD / Placar -->
+    <header class="game-header">
+      <div class="hud-item score-box">
+        <span class="hud-label">SCORE</span>
+        <span id="score-display" class="hud-value">00000</span>
+      </div>
+      <div class="hud-item high-score-box">
+        <span class="hud-label">HIGH SCORE</span>
+        <span id="high-score-display" class="hud-value">00000</span>
+      </div>
+      <div class="hud-item level-box">
+        <span class="hud-label">FASE</span>
+        <span id="level-display" class="hud-value">1</span>
+      </div>
+      <div class="hud-item lives-box">
+        <span class="hud-label">VIDAS</span>
+        <span id="lives-display" class="hud-lives">🐵🐵🐵</span>
+      </div>
+      <div class="hud-actions">
+        <button id="sound-btn" class="arcade-icon-btn" title="Ativar/Desativar Som" aria-label="Som">🔊</button>
+        <button id="pause-btn" class="arcade-icon-btn" title="Pausar Jogo (P)" aria-label="Pausar">⏸️</button>
+      </div>
+    </header>
+
+    <!-- Área principal do Canvas e Telas Sobrepostas -->
+    <main class="canvas-wrapper">
+      <canvas id="game-canvas" width="560" height="620"></canvas>
+
+      <!-- Mensagem temporária (READY! / FASE X) -->
+      <div id="ready-banner" class="game-banner hidden">
+        <span id="banner-text">FASE 1</span>
+      </div>
+
+      <!-- Tela Inicial / Menu -->
+      <div id="start-screen" class="overlay-screen active">
+        <div class="arcade-card">
+          <h1 class="arcade-title glow-yellow">MONKEY<br><span class="title-sub glow-green">MAZE</span></h1>
+          <p class="arcade-tagline">AJUDE O MACACO A COMER TODAS AS BANANAS E FUJA DOS LEÕES DA SELVA!</p>
+
+          <!-- Demonstração dos Personagens (Os 4 Leões da Selva) -->
+          <div class="character-preview">
+            <div class="preview-row">
+              <span class="preview-ghost red-lion">🦁</span>
+              <span class="preview-desc"><strong style="color: #ff3838;">BLINKY</strong> (Leão Vermelho - Furioso)</span>
+            </div>
+            <div class="preview-row">
+              <span class="preview-ghost pink-lion">🦁</span>
+              <span class="preview-desc"><strong style="color: #ff66cc;">PINKY</strong> (Leão Rosa - Emboscador)</span>
+            </div>
+            <div class="preview-row">
+              <span class="preview-ghost cyan-lion">🦁</span>
+              <span class="preview-desc"><strong style="color: #00d2d3;">INKY</strong> (Leão Ciano - Estrategista)</span>
+            </div>
+            <div class="preview-row">
+              <span class="preview-ghost orange-lion">🦁</span>
+              <span class="preview-desc"><strong style="color: #ff9f1a;">CLYDE</strong> (Leão Laranja - Covarde)</span>
+            </div>
+          </div>
+
+          <div class="rules-summary">
+            <div class="rule-item">🍌 Banana normal: <strong>+10 pts</strong></div>
+            <div class="rule-item">🍌✨ Banana Dourada: <strong>+50 pts</strong> (leões assustados!)</div>
+          </div>
+
+          <div class="controls-hint">
+            <p><strong>Controles no PC:</strong> ⬆️ W / ⬇️ S / ⬅️ A / ➡️ D ou Setas | <strong>P</strong>: Pausar</p>
+            <p><strong>Celular / Tablet:</strong> Use os botões virtuais ou deslize o dedo na tela</p>
+          </div>
+
+          <div class="high-score-badge">
+            RECORDE DA SELVA: <span id="start-high-score">00000</span>
+          </div>
+
+          <button id="start-btn" class="arcade-btn btn-primary pulse-btn">
+            ▶ INICIAR JOGO
+          </button>
+        </div>
+      </div>
+
+      <!-- Tela de Pausa -->
+      <div id="pause-screen" class="overlay-screen hidden">
+        <div class="arcade-card">
+          <h2 class="arcade-title glow-yellow">PAUSADO</h2>
+          <p class="pause-hint">Pressione P ou clique abaixo para continuar na selva</p>
+          <div class="modal-buttons">
+            <button id="resume-btn" class="arcade-btn btn-primary">▶ CONTINUAR</button>
+            <button id="restart-from-pause-btn" class="arcade-btn btn-secondary">🔄 REINICIAR</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- Tela de Game Over -->
+      <div id="game-over-screen" class="overlay-screen hidden">
+        <div class="arcade-card">
+          <h2 class="arcade-title glow-red">GAME OVER</h2>
+          <div class="game-over-stats">
+            <div class="stat-row">
+              <span>PONTUAÇÃO FINAL:</span>
+              <span id="final-score" class="stat-value">00000</span>
+            </div>
+            <div class="stat-row">
+              <span>MAIOR RECORDE:</span>
+              <span id="game-over-high-score" class="stat-value">00000</span>
+            </div>
+            <div id="new-record-alert" class="new-record hidden">🎉 NOVO RECORDE DA SELVA! 🎉</div>
+          </div>
+          <button id="play-again-btn" class="arcade-btn btn-primary pulse-btn">
+            🔄 JOGAR NOVAMENTE
+          </button>
+        </div>
+      </div>
+    </main>
+
+    <!-- Controles Virtuais para Celular / Tablet -->
+    <div id="virtual-controls" class="virtual-controls">
+      <div class="dpad">
+        <button id="ctrl-up" class="dpad-btn btn-up" aria-label="Cima">⬆️</button>
+        <button id="ctrl-left" class="dpad-btn btn-left" aria-label="Esquerda">⬅️</button>
+        <button id="ctrl-down" class="dpad-btn btn-down" aria-label="Baixo">⬇️</button>
+        <button id="ctrl-right" class="dpad-btn btn-right" aria-label="Direita">➡️</button>
+        <div class="dpad-center"></div>
+      </div>
+    </div>
+
+    <!-- Rodapé informativo -->
+    <footer class="game-footer">
+      <span>Monkey Maze Arcade &bull; Jogo do Macaco, Leões e Bananas &bull; 100% JS Puro</span>
+    </footer>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
